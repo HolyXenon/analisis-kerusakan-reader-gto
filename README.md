@@ -1,237 +1,198 @@
-# Analisis Kerusakan Reader dalam Sistem Gardu Tol Otomatis (GTO)
-### Pendekatan Data Mining untuk Pemeliharaan Proaktif — Ruas Tol Jakarta-Cikampek
+# Analisis Kerusakan Reader pada Sistem Gardu Tol Otomatis (GTO)
+## Data Mining & Regresi Logistik untuk Pemeliharaan Proaktif (Python + Excel)
 
-> Proyek analisis data yang dikerjakan selama Praktik Kerja Lapangan (PKL) di
-> **PT. Module Intracs Yasatama (Intracs)**, sebuah perusahaan penyedia sistem
-> gardu tol di Indonesia. Proyek ini menggunakan data operasional lalu lintas
-> harian serta log pemeliharaan/kerusakan alat untuk mengidentifikasi pola
-> kerusakan pada *reader* (perangkat pembaca kartu e-Toll) di Gardu Tol
-> Otomatis, dan merumuskan strategi pemeliharaan proaktif berbasis data.
+## Ringkasan Proyek
+Proyek analisis data individu yang dikerjakan sembari magang industri di
+sebuah perusahaan penyedia sistem gardu tol di Indonesia. Proyek ini
+menggunakan data operasional nyata (lalu lintas harian & log
+pemeliharaan/kerusakan alat) dari tujuh gerbang tol di ruas Jakarta-Cikampek
+untuk mencari pola kerusakan pada *reader* — komponen pembaca kartu e-Toll
+di Gardu Tol Otomatis (GTO) — dan menguji apakah volume lalu lintas
+berhubungan dengan jenis tindakan perbaikan yang diperlukan.
 
----
+## Kenapa Analisis Ini Diperlukan?
+GTO bergantung penuh pada reader untuk membaca kartu e-Toll saat kendaraan
+masuk/keluar gerbang. Ketika reader rusak, transaksi tol terganggu dan
+berisiko menimbulkan antrean panjang. Selama ini penanganan kerusakan
+reader cenderung **reaktif** — teknisi baru turun tangan setelah reader
+benar-benar berhenti berfungsi. Pertanyaannya: apakah pola kerusakan ini
+bisa dibaca lebih awal dari data operasional yang sudah rutin dikumpulkan
+perusahaan (lalu lintas harian, log pemeliharaan), sehingga pemeliharaan
+bisa bergeser dari reaktif menjadi **proaktif**?
 
-## 1. Ringkasan
+## Data & Tools
+**Data:** log pemeliharaan/kerusakan reader per gerbang (1–7 Februari 2024),
+data lalu lintas harian per gerbang dipecah per bank penerbit e-Toll —
+keduanya diambil dari software pemantauan operasional internal perusahaan
+(Settlement Monitoring Tool) lalu dikonversi ke format tabel.
 
-Gardu Tol Otomatis (GTO) mengandalkan komponen *reader* untuk membaca kartu
-e-Toll saat kendaraan masuk/keluar gerbang. Ketika reader rusak, transaksi
-tol terganggu dan berpotensi menimbulkan antrean panjang. Proyek ini
-menganalisis data kerusakan reader pada tujuh gerbang tol di ruas
-Jakarta-Cikampek selama periode **1–7 Februari 2024**, dengan tujuan:
+**Tools:** Python (`pandas`, `matplotlib`, `statsmodels`) di Google Colab
+untuk visualisasi & pemodelan, Microsoft Excel untuk pembersihan data awal
+dan cross-check hasil regresi.
 
-1. Mengidentifikasi pola dan frekuensi kerusakan reader per gerbang tol.
-2. Menguji apakah **volume lalu lintas harian** memengaruhi jenis/tingkat
-   kerusakan yang terjadi, menggunakan **regresi logistik**.
-3. Merangkum penyebab kerusakan yang paling umum menjadi rekomendasi
-   **pemeliharaan proaktif** (predictive & preventive maintenance).
+## Alur Analisis
+Data mentah dari dua sumber (lalu lintas & pemeliharaan) digabungkan,
+difilter, dikonversi ke format biner untuk variabel kategorikal, lalu diuji
+dengan regresi logistik.
 
-Data bersumber dari software internal perusahaan, **Settlement Monitoring
-Tool**, yang mencatat lalu lintas kendaraan per gerbang serta laporan
-pemeliharaan/kerusakan alat per shift.
+![Diagram Alir Metode Analisis](images/diagram_alir_metode_penelitian.png)
 
----
+## Hasil Visualisasi
 
-## 2. Hasil
-
-### 2.1 Frekuensi kerusakan reader per gerbang tol
-
-Gerbang **Cikampek Utama** mencatat jumlah laporan kerusakan reader jauh
-lebih tinggi (9 kejadian dalam 7 hari) dibanding gerbang lain, yang
-kemungkinan berkaitan dengan volume lalu lintasnya yang tinggi sebagai
-titik transisi utama ruas tol.
+**Frekuensi kerusakan per gerbang tol** — gerbang **Cikampek Utama**
+mencatat 9 dari 18 total laporan kerusakan dalam seminggu, jauh di atas
+gerbang lain (rata-rata 1–2 laporan). Ini konsisten dengan posisinya
+sebagai titik pertemuan/transisi utama ruas tol.
 
 ![Frekuensi Kerusakan per Gerbang Tol](images/regenerated_chart_frekuensi_kerusakan.png)
 
-### 2.2 Volume lalu lintas vs. distribusi bank e-Toll per gerbang
-
-Gerbang dengan volume lalu lintas tertinggi (Cikarang Utara, Cibitung 3)
-juga menunjukkan proporsi transaksi Bank Mandiri yang dominan dibanding
-BRI/BNI/BCA, konsisten dengan pangsa pasar kartu e-Toll di Indonesia.
+**Total lalu lintas & distribusi bank e-Toll per gerbang** — gerbang dengan
+volume lalu lintas tertinggi (Cikarang Utara, Cibitung 3) juga didominasi
+transaksi Bank Mandiri, sejalan dengan pangsa kartu e-Toll di Indonesia.
 
 ![Lalu Lintas per Bank per Gerbang Tol](images/regenerated_chart_lalu_lintas_bank.png)
 
-### 2.3 Regresi logistik: total lalu lintas sebagai prediktor jenis kerusakan
+## Analisis Mendalam: Menguji Ulang Model Regresi Logistik
 
-Model regresi logistik dibangun untuk memprediksi kategori permasalahan
-(`0 = reader tidak bisa membaca`, `1 = reader error`) menggunakan
-**total lalu lintas harian** pada gerbang terkait sebagai prediktor.
+Laporan awal menyimpulkan hasil regresi logistik dari Excel Regression
+Add-in tanpa menjelaskan detail spesifikasi modelnya. Untuk memverifikasi
+temuan tersebut, saya membangun ulang model yang sama di Python
+(`statsmodels`) — dan proses reproduksi ini sendiri menghasilkan dua
+temuan yang tidak eksplisit dinyatakan sebelumnya.
 
-| | Koefisien | Odds Ratio |
-|---|---|---|
-| Intercept | −7,61 (laporan, Excel) / −3,04 (reproduksi, statsmodels) | 0,0005 |
-| Total Lalu Lintas | 0,00011 (laporan) / 0,000033 (reproduksi) | ≈1,00 |
+**1. Variabel target yang sebenarnya diprediksi bukan "jenis kerusakan",
+melainkan "jenis tindakan perbaikan".**
+Setelah menelusuri ulang tabel data gabungan, ternyata model regresi
+memprediksi `tindakan` (0 = pengecekan alat, 1 = pergantian suku cadang)
+menggunakan dua prediktor sekaligus: `total_lalu_lintas` dan `permasalahan`
+(jenis kerusakan). Setelah spesifikasi ini dikoreksi, hasil reproduksi
+di Python cocok hampir persis dengan angka pada laporan asli:
 
-Lihat `code/03_regresi_logistik.py` untuk reproduksi lengkap.
-
----
-
-## 3. Analisis
-
-- **Total lalu lintas adalah prediktor yang relevan secara arah**, meskipun
-  tingkat signifikansinya lemah (p-value > 0,1 baik pada perhitungan Excel
-  di laporan asli maupun pada reproduksi dengan `statsmodels`). Artinya, ada
-  indikasi bahwa gerbang dengan lalu lintas lebih padat cenderung mengalami
-  jenis kerusakan "reader error" dibanding "reader tidak bisa membaca",
-  namun jumlah observasi yang kecil (18 laporan dalam 7 hari) membuat
-  interval kepercayaan sangat lebar sehingga kesimpulan ini **belum bisa
-  digeneralisasi**.
-- **Catatan reproduksi:** koefisien yang dihasilkan `statsmodels` pada
-  proyek ini tidak identik dengan angka regresi berbasis Excel Add-in yang
-  dilaporkan pada laporan PKL asli (arah dan kesimpulan tetap konsisten,
-  namun magnitudonya berbeda). Ini kemungkinan disebabkan perbedaan metode
-  solver/penskalaan antara Excel Regression Add-in dan MLE `statsmodels`.
-  Disertakan apa adanya sebagai catatan transparansi, bukan untuk menutupi
-  perbedaan tersebut.
-- **Penyebab kerusakan paling umum**: kegagalan membaca kartu (SAM reader
-  tidak terbaca, antena reader bermasalah) dan kegagalan daya (PSU/power
-  supply), yang tersebar di hampir seluruh gerbang — bukan hanya di gerbang
-  ber-volume tinggi.
-- **Rekomendasi pemeliharaan proaktif** yang diusulkan: inspeksi rutin slot
-  SAM dan antena, kalibrasi berkala, monitoring kondisi power supply secara
-  real-time, serta penjadwalan penggantian suku cadang sebelum melewati
-  estimasi masa pakainya — dijabarkan lengkap di laporan (Bab V.B).
-
-**Keterbatasan utama** (diakui pada laporan asli): jumlah observasi kecil
-(1 minggu data, 18 laporan) dan sebagian kesimpulan pemeliharaan proaktif
-masih bersifat deskriptif/kualitatif, belum didukung data kuantitatif
-penuh. Riset lanjutan dengan periode data yang lebih panjang akan
-memperkuat validitas model.
-
----
-
-## 4. Struktur Repository
-
+```python
+X = df[["total_lalu_lintas", "permasalahan"]]
+X = sm.add_constant(X)
+y = df["tindakan"]
+model = sm.Logit(y, X).fit()
 ```
-.
+
+| Variabel | Koefisien | Std. Error | Odds Ratio |
+|---|---|---|---|
+| Intercept | −7,6052 | 5,421 | 0,0005 |
+| Total Lalu Lintas | 0,0001 | 0,000071 | ≈1,0001 |
+| Permasalahan | −5,5802 | 3,557 | 0,0038 |
+
+Kode lengkap ada di
+[`code/03_regresi_logistik.py`](code/03_regresi_logistik.py).
+
+**2. Uji signifikansi keseluruhan model justru signifikan, meski
+masing-masing koefisien terlihat tidak signifikan.**
+Uji rasio kemungkinan (*Likelihood Ratio test*) terhadap model secara
+keseluruhan menghasilkan **p-value 0,0265** (signifikan pada α=5%),
+padahal p-value tiap koefisien individual berada di atas 0,1. Ini indikasi
+klasik adanya **hubungan antar-prediktor** (`total_lalu_lintas` dan
+`permasalahan` sama-sama ikut menjelaskan variasi yang tumpang tindih),
+yang membuat kontribusi masing-masing variabel secara sendiri sulit
+dipisahkan dengan jumlah data sekecil ini.
+
+**3. Variabel `total_lalu_lintas` ternyata hanya memiliki 8 nilai unik dari
+18 observasi.**
+Ini karena angka lalu lintas yang dipakai adalah **total mingguan per
+gerbang** (bukan lalu lintas harian di hari insiden terjadi), sehingga
+setiap insiden kerusakan pada gerbang yang sama otomatis mewarisi angka
+lalu lintas yang identik. Akibatnya variasi X jauh lebih rendah dari
+jumlah observasi yang terlihat, dan model secara implisit lebih banyak
+membedakan "gerbang A vs gerbang B" ketimbang "hari sepi vs hari padat" —
+sebuah keterbatasan yang tidak disebutkan pada laporan awal.
+
+## Keterbatasan Data
+
+Analisis ini bersifat eksploratif, bukan konfirmatori, karena:
+
+- **Rentang data hanya 1 minggu** (18 laporan kerusakan), terlalu kecil
+  untuk regresi logistik dua-prediktor menghasilkan estimasi yang stabil
+  (interval kepercayaan sangat lebar, lihat tabel di atas).
+- **Granularitas lalu lintas per-minggu, bukan per-hari**, seperti
+  dijelaskan pada temuan #3 di atas.
+- **Tidak ada data validasi/hold-out** — model dilatih dan diuji pada
+  dataset yang sama, sehingga tidak ada ukuran seberapa baik model
+  digeneralisasi ke data baru.
+
+Kalau data lalu lintas harian per-gerbang (bukan agregat mingguan) dan
+rentang waktu observasi yang lebih panjang (misalnya 3–6 bulan) tersedia,
+model ini punya potensi jauh lebih kuat untuk dijadikan dasar keputusan
+pemeliharaan proaktif — bukan sekadar sekadar deskriptif.
+
+## Kesimpulan
+Pola deskriptif cukup jelas: kerusakan reader terkonsentrasi di gerbang
+dengan lalu lintas tinggi, dan penyebab paling umum adalah kegagalan
+membaca kartu (SAM/antena) serta kegagalan daya (PSU). Namun secara
+statistik, hubungan antara volume lalu lintas dan jenis tindakan
+perbaikan **belum bisa disimpulkan secara meyakinkan** dengan data yang
+tersedia — bukan karena metodenya salah, tapi karena volume dan
+granularitas datanya belum cukup. Reproduksi model di atas justru berguna
+untuk menunjukkan dengan tepat *di mana* keterbatasannya, sehingga
+rekomendasi pemeliharaan proaktif pada proyek ini (inspeksi rutin slot
+SAM & antena, monitoring power supply, penjadwalan penggantian suku
+cadang) tetap didasarkan pada pola deskriptif yang teramati, bukan model
+prediktif yang belum teruji kuat.
+
+## Skill yang Didemonstrasikan
+- Data mining & regresi logistik untuk data biner (interpretasi koefisien,
+  odds ratio, p-value, uji rasio kemungkinan)
+- Reproduksi & verifikasi hasil analisis lintas tools (Excel → Python)
+  untuk memastikan konsistensi metodologi
+- Diagnostik kritis terhadap kualitas data (granularitas variabel,
+  ukuran sampel, multikolinearitas implisit)
+- Pemrograman Python untuk analisis data: `pandas`, `matplotlib`
+  (visualisasi dual-axis), `statsmodels` (pemodelan statistik)
+- Pengolahan & pembersihan data operasional mentah menjadi dataset
+  siap-analisis
+- Fisika instrumentasi diterapkan pada industri: prinsip kerja sensor
+  NFC/RFID pada reader dan sistem kelistrikan (PSU, relay, MCB) pada
+  perangkat GTO
+- Komunikasi hasil analisis teknis menjadi rekomendasi yang dapat
+  ditindaklanjuti tim operasional
+
+## Struktur Repository
+```
 ├── README.md
 ├── code/
+│   ├── 01_chart_frekuensi_kerusakan.py
+│   ├── 02_chart_lalu_lintas_bank.py
+│   └── 03_regresi_logistik.py
 ├── data/
+│   ├── tabel_pemeliharaan_kerusakan_reader.csv
+│   ├── tabel_lalu_lintas_per_bank.csv
+│   └── tabel_gabungan_regresi_logistik.csv
 ├── images/
+│   ├── diagram_alir_metode_penelitian.png
+│   ├── regenerated_chart_frekuensi_kerusakan.png
+│   ├── regenerated_chart_lalu_lintas_bank.png
+│   ├── original_chart_frekuensi_kerusakan.png
+│   ├── original_chart_lalu_lintas_bank.png
+│   ├── original_chart_trendline_regresi.png
+│   ├── original_tabel_regresi_excel.png
+│   ├── original_output_logit_python.png
+│   ├── alat_lts_gto.jpg
+│   ├── reader_pada_gto.jpg
+│   ├── nfc_tag_dan_reader.jpg
+│   ├── gardu_tol_otomatis.jpg
+│   ├── toll_fare_information.jpg
+│   ├── etoll_card.jpg
+│   ├── peta_ruas_tol_jakarta_cikampek.jpg
+│   ├── settlement_monitoring_tool.jpg
+│   ├── penyolderan_keyboard.jpg
+│   ├── dokumentasi_solder.jpg
+│   ├── dokumentasi_pengujian_layar.jpg
+│   └── dokumentasi_pcb_akhir.jpg
 └── docs/
+    └── laporan_teknis_analisis_reader_gto.pdf
 ```
 
-Penjelasan tiap folder dan file ada di bawah ini, diurutkan sesuai alur
-kerja proyek: **data mentah → kode pengolahan → hasil visual → laporan
-lengkap.**
-
-### 4.1 `data/` — Dataset
-
-| No | File | Isi |
-|---|---|---|
-| 1 | `tabel_pemeliharaan_kerusakan_reader.csv` | Log mentah laporan kerusakan reader per gerbang (tanggal, gerbang, nomor gardu, jenis permasalahan, tindakan perbaikan). Sumber untuk chart frekuensi kerusakan. Setara Tabel 5.1 pada laporan. |
-| 2 | `tabel_lalu_lintas_per_bank.csv` | Rekap total lalu lintas kendaraan per gerbang, dipecah berdasarkan bank penerbit e-Toll (Mandiri, BRI, BNI, BCA). Setara Tabel 5.2. |
-| 3 | `tabel_gabungan_regresi_logistik.csv` | Dataset gabungan (18 observasi) hasil konversi biner dari kategori "Permasalahan" dan "Tindakan", menjadi input model regresi logistik. Setara Tabel 5.3. |
-
-### 4.2 `code/` — Skrip Python
-
-| No | File | Fungsi | Input | Output |
-|---|---|---|---|---|
-| 1 | `01_chart_frekuensi_kerusakan.py` | Menghitung jumlah laporan kerusakan per gerbang dan menampilkannya sebagai bar chart. | `data/tabel_pemeliharaan_kerusakan_reader.csv` | `images/regenerated_chart_frekuensi_kerusakan.png` |
-| 2 | `02_chart_lalu_lintas_bank.py` | Menggabungkan bar chart (total lalu lintas) dan line chart (lalu lintas per bank) dalam satu figur sumbu-ganda. | `data/tabel_lalu_lintas_per_bank.csv` | `images/regenerated_chart_lalu_lintas_bank.png` |
-| 3 | `03_regresi_logistik.py` | Membangun model regresi logistik (`statsmodels`) untuk memprediksi kategori kerusakan dari total lalu lintas, lalu mencetak ringkasan koefisien & odds ratio. | `data/tabel_gabungan_regresi_logistik.csv` | Ringkasan model di terminal (lihat Bagian 2.3) |
-
-Jalankan dari dalam folder `code/` (path relatif ke `../data` dan
-`../images` sudah diatur di masing-masing skrip):
-```bash
-pip install pandas matplotlib statsmodels
-python 01_chart_frekuensi_kerusakan.py
-python 02_chart_lalu_lintas_bank.py
-python 03_regresi_logistik.py
-```
-
-### 4.3 `images/` — Visualisasi & Dokumentasi
-
-**Hasil reproduksi kode di atas** (untuk dibandingkan dengan versi asli):
-
-| File | Keterangan |
-|---|---|
-| `regenerated_chart_frekuensi_kerusakan.png` | Output `01_chart_frekuensi_kerusakan.py` |
-| `regenerated_chart_lalu_lintas_bank.png` | Output `02_chart_lalu_lintas_bank.py` |
-
-**Hasil asli dari laporan** (dibuat dengan Google Colab & Excel saat PKL berlangsung):
-
-| File | Keterangan |
-|---|---|
-| `original_chart_frekuensi_kerusakan.png` | Gambar 5.1 pada laporan — versi asli dari Google Colab |
-| `original_chart_lalu_lintas_bank.png` | Gambar 5.2 pada laporan — versi asli dari Google Colab |
-| `original_chart_trendline_regresi.png` | Gambar 5.3 — trendline hubungan "Permasalahan" & "Tindakan" (Microsoft Excel) |
-| `original_tabel_regresi_excel.png` | Tabel 5.4 — output regresi logistik dari Excel Regression Add-in |
-| `original_output_logit_python.png` | Output tambahan regresi logistik dari `statsmodels` yang dijalankan penulis di Google Colab pada laporan asli |
-
-**Diagram metodologi:**
-
-| File | Keterangan |
-|---|---|
-| `diagram_alir_metode_penelitian.png` | Alur kerja penelitian dari studi literatur hingga kesimpulan pemeliharaan (Gambar 3.10) |
-
-**Foto alat & sistem GTO:**
-
-| File | Keterangan |
-|---|---|
-| `alat_lts_gto.jpg` | Lighting and Traffic System (LTS), salah satu komponen GTO yang dirakit penulis |
-| `reader_pada_gto.jpg` | Reader (perangkat pembaca kartu e-Toll) terpasang pada GTO |
-| `nfc_tag_dan_reader.jpg` | Tag NFC dan modul reader — komponen inti teknologi pembacaan kartu e-Toll |
-| `gardu_tol_otomatis.jpg` | Foto fisik Gardu Tol Otomatis (GTO) |
-| `toll_fare_information.jpg` | Perangkat Toll Fare Information (TFI) — layar informasi tarif tol |
-| `etoll_card.jpg` | Contoh kartu e-Toll dari berbagai bank penerbit |
-| `peta_ruas_tol_jakarta_cikampek.jpg` | Peta ruas Tol Jakarta-Cikampek beserta titik gerbang tol |
-| `settlement_monitoring_tool.jpg` | Tampilan software Settlement Monitoring Tool — sumber data proyek ini |
-
-**Dokumentasi kegiatan PKL:**
-
-| File | Keterangan |
-|---|---|
-| `penyolderan_keyboard.jpg` | Proses penyolderan komponen keyboard GTO |
-| `dokumentasi_solder.jpg` | Dokumentasi tambahan proses perakitan/penyolderan alat |
-| `dokumentasi_pengujian_layar.jpg` | Pengujian tampilan layar perangkat |
-| `dokumentasi_pcb_akhir.jpg` | Hasil akhir papan PCB yang telah dirakit dan diuji |
-
-> Catatan: foto pribadi penulis (wajah) dan gambar yang memuat data pribadi
-> pihak ketiga (nilai kinerja karyawan, hasil tes psikologi kandidat) sengaja
-> **tidak disertakan** di folder ini maupun di laporan PDF — lihat Bagian 6.
-
-### 4.4 `docs/` — Laporan Lengkap
-
-| File | Keterangan |
-|---|---|
-| `Laporan_PKL_Analisis_Kerusakan_Reader_GTO_clean.pdf` | Laporan akhir PKL lengkap (52 halaman): latar belakang, profil perusahaan, tinjauan pustaka, metodologi, hasil & pembahasan penuh, kesimpulan, daftar pustaka, serta lampiran data pendukung & dokumentasi. Halaman identitas pribadi dan data pihak ketiga telah dihilangkan (lihat Bagian 6). |
-
----
-
-## 5. Skill yang Diterapkan
-
-- **Data mining & statistik terapan**: regresi logistik untuk data biner,
-  interpretasi odds ratio, evaluasi signifikansi (p-value, confidence
-  interval).
-- **Pengolahan data**: pembersihan & konversi data operasional mentah
-  (format tool internal perusahaan) menjadi tabel terstruktur siap-analisis
-  menggunakan Microsoft Excel.
-- **Pemrograman Python untuk analisis data**: `pandas` (manipulasi data),
-  `matplotlib` (visualisasi dual-axis & bar chart), `statsmodels`
-  (pemodelan regresi logistik), dijalankan di Google Colab.
-- **Fisika instrumentasi diterapkan pada industri**: pemahaman prinsip kerja
-  sensor NFC/RFID pada reader, sistem kelistrikan (PSU, relay, MCB) pada
-  perangkat GTO, dari pengalaman langsung merakit & menguji alat.
-- **Komunikasi hasil analisis**: menyusun temuan teknis menjadi rekomendasi
-  pemeliharaan proaktif yang dapat ditindaklanjuti oleh tim operasional.
-
----
-
-## 6. Tentang Proyek Asli
-
-- **Instansi**: PT. Module Intracs Yasatama (Intracs), Cikarang, Bekasi
-- **Program Studi**: Fisika (Fisika Instrumentasi) — FMIPA, Universitas
-  Negeri Jakarta
-- **Periode PKL**: 12 Februari 2024 – 31 Juli 2024
-- **Laporan lengkap**: lihat `docs/` — versi yang dipublikasikan di sini
-  sudah dibersihkan dari halaman identitas pribadi (sampul, lembar
-  pengesahan, biodata, tanda tangan) serta data pribadi pihak ketiga
-  (data penilaian kinerja karyawan & hasil tes psikologi kandidat) yang
-  awalnya ikut terlampir di laporan.
-
----
-
-## Lisensi & Atribusi
-
-Repository ini dibagikan untuk keperluan portofolio pembelajaran. Data
-lalu lintas dan pemeliharaan berasal dari operasional PT. Module Intracs
-Yasatama dan digunakan di sini hanya sebagai studi kasus akademik.
+## Referensi
+- Amalia, G. P. (2017). *Efektivitas Electronic Toll (E-Toll) Oleh PT. Jasa Marga Surabaya*. Publika.
+- Bharambe, S., Kumbhar, P., Patil, P., & Sawant, K. (2016). *Automated Toll Collection System Using NFC And Theft Vehicle Detection*. International Journal of Engineering And Computer Science.
+- Hendayana, R. (2013). *Application Method of Logistic Regression to Analyze the Agricultural Technology Adoption*. Informatika Pertanian.
+- Sufanir, A. M. S. (2017). *Efektivitas Gardu Tol Otomatis (GTO) Buah Batu Ditinjau dari Kecepatan Transaksi Rata-Rata*. Simposium II UNIID.
+- Varalakshmi, M. I., Abishek, M. D., Suriya, M. K. A., & BT, M. H. (2020). *Smartpay – Unified Payment System Using NFC*.
+- Yudissanta, A., & Ratna, M. (2012). *Analisis pemakaian kemoterapi pada kasus kanker payudara dengan menggunakan metode regresi logistik multinomial*. Jurnal Sains dan Seni ITS.
