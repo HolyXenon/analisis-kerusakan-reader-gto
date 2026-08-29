@@ -1,0 +1,19 @@
+tanggal,gerbang,gardu,permasalahan,tindakan
+01-Feb,Cikarang Barat 5,11,Reader error,Cek kabel data
+01-Feb,Cikarang Utara,8,Reader error,Pergantian PSU 12 Volt
+01-Feb,Cikampek Utama,10,Reader error,Pengecekkan tegangan power dan data
+01-Feb,Karawang Timur 1,4,Autentifikasi error,Pengecekan kabel data
+01-Feb,Karawang Timur 1,5,Autentifikasi error,Pengecekkan antenna reader
+02-Feb,Cikampek Utama,7,Reader tidak bisa membaca,"Pengecekkan power data, SAM reader"
+04-Feb,Cikampek Utama,39,Reader tidak bisa membaca,Pergantian SAM reader
+05-Feb,Bekasi Barat 3,28,Reader tidak bisa membaca,Perbaikan dan setting antenna
+05-Feb,Cikarang Barat 5,11,Reader tidak bisa membaca,Pergantian suku cadang
+05-Feb,Cikampek Utama,10,Reader tidak bisa membaca,Pergantian PSU reader
+05-Feb,Cikampek Utama,8,Reader tidak bisa membaca,Pengecekkan tegangan power dan data
+06-Feb,Cibitung 3,8,Reader error,Pengecekan reader
+06-Feb,Cibitung 3,8,Reader error,Pergantian SAM reader
+06-Feb,Cikampek Utama,8,Reader tidak bisa membaca,Pergantian PSU reader
+06-Feb,Cikampek Utama,6,Reader tidak bisa membaca,Pergantian PSU reader
+07-Feb,Cikarang Barat 4,5,Reader error,Pengecekan SAM reader
+07-Feb,Cikampek Utama,6,Reader tidak bisa membaca,Pengecekkan tegangan power dan data
+07-Feb,Cikampek Utama,4,Reader tidak bisa membaca,Pergantian PSU reader
