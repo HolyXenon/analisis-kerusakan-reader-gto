@@ -1,5 +1,4 @@
-# Analisis Kerusakan Reader pada Sistem Gardu Tol Otomatis (GTO)
-## Data Mining & Regresi Logistik untuk Pemeliharaan Proaktif (Python + Excel)
+# Toll Gate Reader Failure Analysis: A Data Mining Approach for Proactive Maintenance
 
 ## Ringkasan Proyek
 Proyek analisis data individu yang dikerjakan sembari magang industri di
